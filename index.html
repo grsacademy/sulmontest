@@ -1,19 +1,339 @@
-<!-- HTML 폼 부분 -->
-<form id="surveyForm">
-  <input type="text" name="name" placeholder="이름" required>
-  <input type="text" name="phone" placeholder="연락처" required>
-  <input type="text" name="course" placeholder="신청과정" required>
-  <button type="submit">신청하기</button>
-</form>
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Education Feedback</title>
+    <style>
+        /* Apple Style CSS */
+        :root {
+            --bg-color: #f5f5f7;
+            --card-bg: #ffffff;
+            --text-main: #1d1d1f;
+            --text-sub: #86868b;
+            --accent: #0071e3;
+            --border: #d2d2d7;
+        }
 
-<script>
-  const scriptURL = 'https://script.google.com/macros/s/AKfycbwT0BmyVlkg-SWOHm1ZUY7FY2DuQDi80y2UskG1hu8wTssCRSDr_ubIn4qb-ugr0kSX/exec';
-  const form = document.getElementById('surveyForm');
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
 
-  form.addEventListener('submit', e => {
-    e.preventDefault();
-    fetch(scriptURL, { method: 'POST', body: new FormData(form)})
-      .then(response => alert("성공적으로 접수되었습니다!"))
-      .catch(error => console.error('Error!', error.message));
-  });
-</script>
+        header {
+            width: 100%;
+            height: 44px;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(20px);
+            position: fixed;
+            top: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            border-bottom: 0.5px solid var(--border);
+        }
+
+        header span {
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+        }
+
+        .container {
+            max-width: 680px;
+            width: 90%;
+            margin: 80px 0 100px 0;
+        }
+
+        .hero {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .hero h1 {
+            font-size: 40px;
+            font-weight: 700;
+            letter-spacing: -0.015em;
+            margin-bottom: 10px;
+        }
+
+        .hero p {
+            font-size: 19px;
+            color: var(--text-sub);
+        }
+
+        .section-card {
+            background: var(--card-bg);
+            border-radius: 18px;
+            padding: 30px;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+        }
+
+        h2 {
+            font-size: 21px;
+            font-weight: 600;
+            margin-top: 0;
+            margin-bottom: 25px;
+            border-bottom: 1px solid var(--bg-color);
+            padding-bottom: 10px;
+        }
+
+        .question {
+            margin-bottom: 25px;
+        }
+
+        .question label {
+            display: block;
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 12px;
+        }
+
+        /* 5점 척도 스타일 */
+        .scale-group {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .scale-item {
+            flex: 1;
+            text-align: center;
+        }
+
+        .scale-item input[type="radio"] {
+            display: none;
+        }
+
+        .scale-item label {
+            display: block;
+            padding: 12px 0;
+            background: var(--bg-color);
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s ease;
+            margin-bottom: 0;
+            border: 1px solid transparent;
+        }
+
+        .scale-item input[type="radio"]:checked + label {
+            background: var(--accent);
+            color: white;
+            font-weight: 600;
+        }
+
+        /* 주관식 스타일 */
+        textarea {
+            width: 100%;
+            height: 120px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            padding: 15px;
+            font-size: 16px;
+            box-sizing: border-box;
+            resize: none;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        textarea:focus {
+            border-color: var(--accent);
+        }
+
+        button {
+            width: 100%;
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 18px;
+            font-size: 17px;
+            font-weight: 600;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: opacity 0.3s;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        button:disabled {
+            background: var(--text-sub);
+            cursor: not-allowed;
+        }
+
+        /* 반응형 */
+        @media (max-width: 480px) {
+            .hero h1 { font-size: 32px; }
+            .scale-group { gap: 5px; }
+            .scale-item label { font-size: 12px; padding: 10px 0; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <span>Education Feedback</span>
+    </header>
+
+    <div class="container">
+        <div class="hero">
+            <h1>설문 조사</h1>
+            <p>더 나은 교육 환경을 위해 소중한 의견을 들려주세요.</p>
+        </div>
+
+        <form id="surveyForm">
+            <!-- 교육 관련 설문 -->
+            <div class="section-card">
+                <h2>교육 관련</h2>
+                
+                <div class="question">
+                    <label>커리큘럼 만족도</label>
+                    <div class="scale-group" id="curriculum">
+                        <div class="scale-item"><input type="radio" name="curriculum" value="1" id="c1" required><label for="c1">1</label></div>
+                        <div class="scale-item"><input type="radio" name="curriculum" value="2" id="c2"><label for="c2">2</label></div>
+                        <div class="scale-item"><input type="radio" name="curriculum" value="3" id="c3"><label for="c3">3</label></div>
+                        <div class="scale-item"><input type="radio" name="curriculum" value="4" id="c4"><label for="c4">4</label></div>
+                        <div class="scale-item"><input type="radio" name="curriculum" value="5" id="c5"><label for="c5">5</label></div>
+                    </div>
+                </div>
+
+                <div class="question">
+                    <label>담임강사 만족도</label>
+                    <div class="scale-group">
+                        <div class="scale-item"><input type="radio" name="instructor" value="1" id="i1" required><label for="i1">1</label></div>
+                        <div class="scale-item"><input type="radio" name="instructor" value="2" id="i2"><label for="i2">2</label></div>
+                        <div class="scale-item"><input type="radio" name="instructor" value="3" id="i3"><label for="i3">3</label></div>
+                        <div class="scale-item"><input type="radio" name="instructor" value="4" id="i4"><label for="i4">4</label></div>
+                        <div class="scale-item"><input type="radio" name="instructor" value="5" id="i5"><label for="i5">5</label></div>
+                    </div>
+                </div>
+
+                <div class="question">
+                    <label>자료제공 만족도</label>
+                    <div class="scale-group">
+                        <div class="scale-item"><input type="radio" name="materials" value="1" id="m1" required><label for="m1">1</label></div>
+                        <div class="scale-item"><input type="radio" name="materials" value="2" id="m2"><label for="m2">2</label></div>
+                        <div class="scale-item"><input type="radio" name="materials" value="3" id="m3"><label for="m3">3</label></div>
+                        <div class="scale-item"><input type="radio" name="materials" value="4" id="m4"><label for="m4">4</label></div>
+                        <div class="scale-item"><input type="radio" name="materials" value="5" id="m5"><label for="m5">5</label></div>
+                    </div>
+                </div>
+
+                <div class="question">
+                    <label>실습기회 만족도</label>
+                    <div class="scale-group">
+                        <div class="scale-item"><input type="radio" name="practice" value="1" id="p1" required><label for="p1">1</label></div>
+                        <div class="scale-item"><input type="radio" name="practice" value="2" id="p2"><label for="p2">2</label></div>
+                        <div class="scale-item"><input type="radio" name="practice" value="3" id="p3"><label for="p3">3</label></div>
+                        <div class="scale-item"><input type="radio" name="practice" value="4" id="p4"><label for="p4">4</label></div>
+                        <div class="scale-item"><input type="radio" name="practice" value="5" id="p5"><label for="p5">5</label></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 환경 관련 설문 -->
+            <div class="section-card">
+                <h2>환경 관련</h2>
+                
+                <div class="question">
+                    <label>건물 시설 만족도</label>
+                    <div class="scale-group">
+                        <div class="scale-item"><input type="radio" name="building" value="1" id="b1" required><label for="b1">1</label></div>
+                        <div class="scale-item"><input type="radio" name="building" value="2" id="b2"><label for="b2">2</label></div>
+                        <div class="scale-item"><input type="radio" name="building" value="3" id="b3"><label for="b3">3</label></div>
+                        <div class="scale-item"><input type="radio" name="building" value="4" id="b4"><label for="b4">4</label></div>
+                        <div class="scale-item"><input type="radio" name="building" value="5" id="b5"><label for="b5">5</label></div>
+                    </div>
+                </div>
+
+                <div class="question">
+                    <label>강의장 만족도</label>
+                    <div class="scale-group">
+                        <div class="scale-item"><input type="radio" name="classroom" value="1" id="cr1" required><label for="cr1">1</label></div>
+                        <div class="scale-item"><input type="radio" name="classroom" value="2" id="cr2"><label for="cr2">2</label></div>
+                        <div class="scale-item"><input type="radio" name="classroom" value="3" id="cr3"><label for="cr3">3</label></div>
+                        <div class="scale-item"><input type="radio" name="classroom" value="4" id="cr4"><label for="cr4">4</label></div>
+                        <div class="scale-item"><input type="radio" name="classroom" value="5" id="cr5"><label for="cr5">5</label></div>
+                    </div>
+                </div>
+
+                <div class="question">
+                    <label>실습장 만족도</label>
+                    <div class="scale-group">
+                        <div class="scale-item"><input type="radio" name="lab" value="1" id="l1" required><label for="l1">1</label></div>
+                        <div class="scale-item"><input type="radio" name="lab" value="2" id="l2"><label for="l2">2</label></div>
+                        <div class="scale-item"><input type="radio" name="lab" value="3" id="l3"><label for="l3">3</label></div>
+                        <div class="scale-item"><input type="radio" name="lab" value="4" id="l4"><label for="l4">4</label></div>
+                        <div class="scale-item"><input type="radio" name="lab" value="5" id="l5"><label for="l5">5</label></div>
+                    </div>
+                </div>
+
+                <div class="question">
+                    <label>기숙사 만족도</label>
+                    <div class="scale-group">
+                        <div class="scale-item"><input type="radio" name="dormitory" value="1" id="d1" required><label for="d1">1</label></div>
+                        <div class="scale-item"><input type="radio" name="dormitory" value="2" id="d2"><label for="d2">2</label></div>
+                        <div class="scale-item"><input type="radio" name="dormitory" value="3" id="d3"><label for="d3">3</label></div>
+                        <div class="scale-item"><input type="radio" name="dormitory" value="4" id="d4"><label for="d4">4</label></div>
+                        <div class="scale-item"><input type="radio" name="dormitory" value="5" id="d5"><label for="d5">5</label></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 기타 설문 -->
+            <div class="section-card">
+                <h2>기타 의견</h2>
+                <div class="question">
+                    <label>느낀점 및 건의사항</label>
+                    <textarea name="feedback" placeholder="여기에 내용을 입력해 주세요..."></textarea>
+                </div>
+            </div>
+
+            <button type="submit" id="submitBtn">제출하기</button>
+        </form>
+    </div>
+
+    <script>
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbytFFHeiv-YzDy5LWLC9sNbhDv7Fr5bJkTJPGb2KG0gLUletDMuGkYwGlmjUZebhX0/exec';
+        const form = document.getElementById('surveyForm');
+        const submitBtn = document.getElementById('submitBtn');
+
+        form.addEventListener('submit', e => {
+            e.preventDefault();
+            submitBtn.disabled = true;
+            submitBtn.innerText = '제출 중...';
+
+            // 폼 데이터를 URLSearchParams로 변환
+            const formData = new FormData(form);
+            
+            fetch(scriptURL, { 
+                method: 'POST', 
+                body: new URLSearchParams(formData) 
+            })
+            .then(response => {
+                alert('소중한 의견 감사합니다!');
+                submitBtn.disabled = false;
+                submitBtn.innerText = '제출하기';
+                form.reset();
+            })
+            .catch(error => {
+                console.error('Error!', error.message);
+                alert('오류가 발생했습니다. 다시 시도해 주세요.');
+                submitBtn.disabled = false;
+                submitBtn.innerText = '제출하기';
+            });
+        });
+    </script>
+</body>
+</html>
